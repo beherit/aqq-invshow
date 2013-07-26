@@ -1,3 +1,7 @@
+1.0.2.0
+-----
+* Wy³¹czenie dzia³ania wtyczki dla kontaktów z poza listy.
+
 1.0.1.2
 -----
 * Poprawka w kodzie.
