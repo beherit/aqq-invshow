@@ -1,3 +1,9 @@
+1.1.0.0
+-----
+* Przepisanie wtyczki pod kompilator Embarcadero C++ Builder XE3.
+* Spora optymalizacja kodu.
+* Przywracanie stanu „roz³¹czony” po 5 minutach od zamkniêcia zak³adki dla wszystkich kontaktów.
+
 1.0.4.0
 -----
 * Poprawne wykrywanie, które zak³adki s¹ konferencjami/czatami.
