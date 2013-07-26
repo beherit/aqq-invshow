@@ -4,6 +4,7 @@
 #pragma hdrstop
 #pragma argsused
 #include <PluginAPI.h>
+#include <IdHashMessageDigest.hpp>
 
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved)
 {
@@ -36,6 +37,13 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam);
 int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam);
 //FORWARD-TIMER--------------------------------------------------------------
 LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+//---------------------------------------------------------------------------
+
+//Pobieranie sciezki katalogu prywatnego wtyczek
+UnicodeString GetPluginUserDir()
+{
+  return StringReplace((wchar_t*)PluginLink.CallService(AQQ_FUNCTION_GETPLUGINUSERDIR,0,0), "\\", "\\\\", TReplaceFlags() << rfReplaceAll);
+}
 //---------------------------------------------------------------------------
 
 //Pobieranie indeksu wolnego rekordu listy kontaktow
@@ -245,10 +253,63 @@ int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam)
 }
 //---------------------------------------------------------------------------
 
+//Zapisywanie zasobów
+void ExtractRes(wchar_t* FileName, wchar_t* ResName, wchar_t* ResType)
+{
+  TPluginTwoFlagParams PluginTwoFlagParams;
+  PluginTwoFlagParams.cbSize = sizeof(TPluginTwoFlagParams);
+  PluginTwoFlagParams.Param1 = ResName;
+  PluginTwoFlagParams.Param2 = ResType;
+  PluginTwoFlagParams.Flag1 = (int)HInstance;
+  PluginLink.CallService(AQQ_FUNCTION_SAVERESOURCE,(WPARAM)&PluginTwoFlagParams,(LPARAM)FileName);
+}
+//---------------------------------------------------------------------------
+
+//Obliczanie sumy kontrolnej pliku
+UnicodeString MD5File(UnicodeString FileName)
+{
+  if(FileExists(FileName))
+  {
+	UnicodeString Result;
+	TFileStream *fs;
+
+	fs = new TFileStream(FileName, fmOpenRead | fmShareDenyWrite);
+	try
+	{
+	  TIdHashMessageDigest5 *idmd5= new TIdHashMessageDigest5();
+	  try
+	  {
+		Result = idmd5->HashStreamAsHex(fs);
+	  }
+	  __finally
+	  {
+		delete idmd5;
+	  }
+	}
+	__finally
+	{
+	  delete fs;
+	}
+
+	return Result;
+  }
+  else
+   return 0;
+}
+//---------------------------------------------------------------------------
+
 extern "C" int __declspec(dllexport) __stdcall Load(PPluginLink Link)
 {
   //Linkowanie wtyczki z komunikatorem
   PluginLink = *Link;
+  //Wypakiwanie ikonki InvShow.dll.png
+  //E344374D3F234C4C7024F0B992B6DDA3
+  if(!DirectoryExists(GetPluginUserDir()+"\\\\Shared"))
+   CreateDir(GetPluginUserDir()+"\\\\Shared");
+  if(!FileExists(GetPluginUserDir()+"\\\\Shared\\\\InvShow.dll.png"))
+   ExtractRes((GetPluginUserDir()+"\\\\Shared\\\\InvShow.dll.png").w_str(),L"SHARED",L"DATA");
+  else if(MD5File(GetPluginUserDir()+"\\\\Shared\\\\InvShow.dll.png")!="E344374D3F234C4C7024F0B992B6DDA3")
+   ExtractRes((GetPluginUserDir()+"\\\\Shared\\\\InvShow.dll.png").w_str(),L"SHARED",L"DATA");
   //Hook na zamkniecie okna rozmowy lub zakladki
   PluginLink.HookEvent(AQQ_CONTACTS_BUDDY_CLOSETAB,OnCloseTab);
   //Hook na zmianê stanu kontaktu
@@ -303,7 +364,7 @@ extern "C" PPluginInfo __declspec(dllexport) __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,0,0);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,1,0);
   PluginInfo.Description = L"Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan \"roz³¹czony\", jego stan zostanie zmieniony na \"niewidoczny\" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.";
   PluginInfo.Author = L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = L"kontakt@beherit.pl";
