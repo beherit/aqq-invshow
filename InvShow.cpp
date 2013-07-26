@@ -13,11 +13,12 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 //Struktury-glowne-----------------------------------------------------------
 TPluginLink PluginLink;
 TPluginInfo PluginInfo;
-PPluginContact Contact;
+PPluginContact CloseTabContact;
+PPluginContact ContactsUpdateContact;
+PPluginContact RecvMsgContact;
+PPluginMessage RecvMsgMessage;
 //Uchwyt-do-okna-timera------------------------------------------------------
 HWND hTimerFrm;
-//Lista-JID-otwartych-zakladek-----------------------------------------------
-TStringList* TabsList = new TStringList;
 //Tablica-kontaktow----------------------------------------------------------
 TPluginContact ContactsList[100];
 //Definicja-struktury-tablicy-unikatowych-ID-timera--------------------------
@@ -29,13 +30,11 @@ struct TIdTable
 //Zmienna-tablicy-unikatowych-ID-timera--------------------------------------
 TIdTable IdTable[100];
 //FORWARD-AQQ-HOOKS----------------------------------------------------------
-/*int __stdcall OnActiveTab(WPARAM wParam, LPARAM lParam);
 int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam);
 int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam);
-int __stdcall OnFetchAllTabs(WPARAM wParam, LPARAM lParam);
-int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam);*/
+int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam);
 //FORWARD-TIMER--------------------------------------------------------------
-//LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 //---------------------------------------------------------------------------
 
 //Pobieranie indeksu wolnego rekordu listy kontaktow
@@ -128,34 +127,13 @@ LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 }
 //---------------------------------------------------------------------------
 
-//Hook na aktwyna zakladke lub okno rozmowy
-int __stdcall OnActiveTab(WPARAM wParam, LPARAM lParam)
-{
-  //Pobieranie danych kontatku
-  Contact = (PPluginContact)lParam;
-  //Pobieranie identyfikatora kontatku
-  UnicodeString JID = (wchar_t*)Contact->JID;
-  if(!Contact->IsChat) JID = JID + "/" + (wchar_t*)Contact->Resource;
-  //Dodawanie JID do listy otwartych zakladek
-  if(TabsList->IndexOf(JID)==-1) TabsList->Add(JID);
-
-  return 0;
-}
-//---------------------------------------------------------------------------
-
 //Hook na zamkniecie okna rozmowy lub zakladki
 int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 {
-  //Pobieranie danych kontatku
-  Contact = (PPluginContact)lParam;
-  //Pobieranie identyfikatora kontatku
-  UnicodeString JID = (wchar_t*)Contact->JID;
-  if(!Contact->IsChat) JID = JID + "/" + (wchar_t*)Contact->Resource;
-  //Usuwanie JID z listy aktywnych zakladek
-  if(TabsList->IndexOf(JID)!=-1)
-   TabsList->Delete(TabsList->IndexOf(JID));
-  //Jezeli kontakt jest niewidoczny oraz jest na liscie kontaktow
-  if((!Contact->Temporary)&&(Contact->State==6))
+  //Pobieranie danych kontaktu
+  CloseTabContact = (PPluginContact)lParam;
+  //Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
+  if((!CloseTabContact->Temporary)&&(!CloseTabContact->IsChat)&&(CloseTabContact->State==6))
   {
 	//Pobranie wolnych rekordow
 	int FreeContact = ReciveFreeContact();
@@ -167,35 +145,35 @@ int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 	IdTable[FreeTable].ContactIndex = FreeContact;
 	//Przypisanie danych w tablicy kontaktow
 	//cbSize
-	ContactsList[FreeContact].cbSize = Contact->cbSize;
+	ContactsList[FreeContact].cbSize = CloseTabContact->cbSize;
 	//JID
-	ContactsList[FreeContact].JID = (wchar_t*)realloc(ContactsList[FreeContact].JID, sizeof(wchar_t)*(wcslen(Contact->JID)+1));
-	memcpy(ContactsList[FreeContact].JID, Contact->JID, sizeof(wchar_t)*wcslen(Contact->JID));
-	ContactsList[FreeContact].JID[wcslen(Contact->JID)] = L'\0';
+	ContactsList[FreeContact].JID = (wchar_t*)realloc(ContactsList[FreeContact].JID, sizeof(wchar_t)*(wcslen(CloseTabContact->JID)+1));
+	memcpy(ContactsList[FreeContact].JID, CloseTabContact->JID, sizeof(wchar_t)*wcslen(CloseTabContact->JID));
+	ContactsList[FreeContact].JID[wcslen(CloseTabContact->JID)] = L'\0';
 	//Nick
-	ContactsList[FreeContact].Nick = (wchar_t*)realloc(ContactsList[FreeContact].Nick, sizeof(wchar_t)*(wcslen(Contact->Nick)+1));
-	memcpy(ContactsList[FreeContact].Nick, Contact->Nick, sizeof(wchar_t)*wcslen(Contact->Nick));
-	ContactsList[FreeContact].Nick[wcslen(Contact->Nick)] = L'\0';
+	ContactsList[FreeContact].Nick = (wchar_t*)realloc(ContactsList[FreeContact].Nick, sizeof(wchar_t)*(wcslen(CloseTabContact->Nick)+1));
+	memcpy(ContactsList[FreeContact].Nick, CloseTabContact->Nick, sizeof(wchar_t)*wcslen(CloseTabContact->Nick));
+	ContactsList[FreeContact].Nick[wcslen(CloseTabContact->Nick)] = L'\0';
 	//Resource
-	ContactsList[FreeContact].Resource = (wchar_t*)realloc(ContactsList[FreeContact].Resource, sizeof(wchar_t)*(wcslen(Contact->Resource)+1));
-	memcpy(ContactsList[FreeContact].Resource, Contact->Resource, sizeof(wchar_t)*wcslen(Contact->Resource));
-	ContactsList[FreeContact].Resource[wcslen(Contact->Resource)] = L'\0';
+	ContactsList[FreeContact].Resource = (wchar_t*)realloc(ContactsList[FreeContact].Resource, sizeof(wchar_t)*(wcslen(CloseTabContact->Resource)+1));
+	memcpy(ContactsList[FreeContact].Resource, CloseTabContact->Resource, sizeof(wchar_t)*wcslen(CloseTabContact->Resource));
+	ContactsList[FreeContact].Resource[wcslen(CloseTabContact->Resource)] = L'\0';
 	//Groups
-	ContactsList[FreeContact].Groups = (wchar_t*)realloc(ContactsList[FreeContact].Groups, sizeof(wchar_t)*(wcslen(Contact->Groups)+1));
-	memcpy(ContactsList[FreeContact].Groups, Contact->Groups, sizeof(wchar_t)*wcslen(Contact->Groups));
-	ContactsList[FreeContact].Groups[wcslen(Contact->Groups)] = L'\0';
+	ContactsList[FreeContact].Groups = (wchar_t*)realloc(ContactsList[FreeContact].Groups, sizeof(wchar_t)*(wcslen(CloseTabContact->Groups)+1));
+	memcpy(ContactsList[FreeContact].Groups, CloseTabContact->Groups, sizeof(wchar_t)*wcslen(CloseTabContact->Groups));
+	ContactsList[FreeContact].Groups[wcslen(CloseTabContact->Groups)] = L'\0';
 	//State
 	ContactsList[FreeContact].State = 0;
 	//Status
-	ContactsList[FreeContact].Status = (wchar_t*)realloc(ContactsList[FreeContact].Status, sizeof(wchar_t)*(wcslen(Contact->Status)+1));
-	memcpy(ContactsList[FreeContact].Status, Contact->Status, sizeof(wchar_t)*wcslen(Contact->Status));
-	ContactsList[FreeContact].Status[wcslen(Contact->Status)] = L'\0';
+	ContactsList[FreeContact].Status = (wchar_t*)realloc(ContactsList[FreeContact].Status, sizeof(wchar_t)*(wcslen(CloseTabContact->Status)+1));
+	memcpy(ContactsList[FreeContact].Status, CloseTabContact->Status, sizeof(wchar_t)*wcslen(CloseTabContact->Status));
+	ContactsList[FreeContact].Status[wcslen(CloseTabContact->Status)] = L'\0';
     //Other
-	ContactsList[FreeContact].Temporary = Contact->Temporary;
-	ContactsList[FreeContact].FromPlugin = Contact->FromPlugin;
-	ContactsList[FreeContact].UserIdx = Contact->UserIdx;
-	ContactsList[FreeContact].Subscription = Contact->Subscription;
-	ContactsList[FreeContact].IsChat = Contact->Subscription;
+	ContactsList[FreeContact].Temporary = CloseTabContact->Temporary;
+	ContactsList[FreeContact].FromPlugin = CloseTabContact->FromPlugin;
+	ContactsList[FreeContact].UserIdx = CloseTabContact->UserIdx;
+	ContactsList[FreeContact].Subscription = CloseTabContact->Subscription;
+	ContactsList[FreeContact].IsChat = CloseTabContact->Subscription;
 	//Wlacznie timera ustawienia rozlaczonego stanu kontatku
 	SetTimer(hTimerFrm,TimerID,300000,(TIMERPROC)TimerFrmProc);
   }
@@ -207,10 +185,10 @@ int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 //Hook na zmianê stanu kontaktu
 int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 {
-  //Pobieranie danych kontatku
-  Contact = (PPluginContact)wParam;
-  //Jezeli kontakt jest na liscie kontaktow i jego stan jest rozny od niewidocznego
-  if((!Contact->Temporary)&&(Contact->State!=6))
+  //Pobieranie danych kontaku
+  ContactsUpdateContact = (PPluginContact)wParam;
+  //Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
+  if((!ContactsUpdateContact->Temporary)&&(!ContactsUpdateContact->IsChat)&&(ContactsUpdateContact->State!=6))
   {
 	//Przeszukiwanie tablicy
 	for(int Count=0;Count<100;Count++)
@@ -219,9 +197,9 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 	  if(ContactsList[Count].cbSize)
 	  {
         //Porwnanie zapamietego rekordu z danymi z notyfikacji
-		if((ContactsList[Count].JID==Contact->JID)
-		&&(ContactsList[Count].Resource==Contact->Resource)
-		&&(ContactsList[Count].UserIdx==Contact->UserIdx))
+		if((ContactsList[Count].JID==ContactsUpdateContact->JID)
+		&&(ContactsList[Count].Resource==ContactsUpdateContact->Resource)
+		&&(ContactsList[Count].UserIdx==ContactsUpdateContact->UserIdx))
 		{
           //Pobranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
 		  int TableIndex = ReciveTableIndex(Count);
@@ -242,42 +220,23 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 }
 //---------------------------------------------------------------------------
 
-//Pobieranie listy wszystkich otartych zakladek/okien
-int __stdcall OnFetchAllTabs(WPARAM wParam, LPARAM lParam)
-{
-  if((wParam!=0)&&(lParam!=0))
-  {
-	//Pobieranie danych kontatku
-	Contact = (PPluginContact)lParam;
-	//Pobieranie identyfikatora kontatku
-	UnicodeString JID = (wchar_t*)Contact->JID;
-	if(!Contact->IsChat) JID = JID + "/" + (wchar_t*)Contact->Resource;
-	//Dodawanie JID do listy otwartych zakladek
-	if(TabsList->IndexOf(JID)==-1) TabsList->Add(JID);
-  }
-
-  return 0;
-}
-//---------------------------------------------------------------------------
-
 //Hook na odbieranie wiadomosci
 int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam)
 {
-  //Pobieranie danych kontatku
-  Contact = (PPluginContact)wParam;
-  //Jezeli kontakt jest rozlazony i jest na liscie kontaktow
-  if((!Contact->Temporary)&&(Contact->State==0))
+  //Pobieranie danych kontaktu
+  RecvMsgContact = (PPluginContact)wParam;
+  //Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
+  if((!RecvMsgContact->Temporary)&&(!RecvMsgContact->IsChat)&&(RecvMsgContact->State==0))
   {
-	//Pobieranie identyfikatora kontatku
-	UnicodeString JID = (wchar_t*)Contact->JID;
-	if(!Contact->IsChat) JID = JID + "/" + (wchar_t*)Contact->Resource;
-	//Jezeli zakladka z kontaktem jest otwarta
-	if(TabsList->IndexOf(JID)!=-1)
+	//Pobieranie danych wiadomosci
+	RecvMsgMessage = (PPluginMessage)lParam;
+	//Wiadomosc nie jest offline'owa
+	if(!RecvMsgMessage->Offline)
 	{
-      //Ustawienie stanu kontatku
-	  Contact->State = 6;
+	  //Ustawienie stanu kontatku
+	  RecvMsgContact->State = 6;
 	  //Zmiana stanu kontatku na liscie
-	  PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)Contact);
+	  PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)RecvMsgContact);
 	}
   }
 
@@ -289,18 +248,6 @@ extern "C" int __declspec(dllexport) __stdcall Load(PPluginLink Link)
 {
   //Linkowanie wtyczki z komunikatorem
   PluginLink = *Link;
-  //Wszystkie moduly zostaly zaladowane
-  if(PluginLink.CallService(AQQ_SYSTEM_MODULESLOADED,0,0))
-  {
-	//Hook na pobieranie aktywnych zakladek
-	PluginLink.HookEvent(AQQ_CONTACTS_BUDDY_FETCHALLTABS,OnFetchAllTabs);
-	//Pobieranie aktywnych zakladek
-	PluginLink.CallService(AQQ_CONTACTS_BUDDY_FETCHALLTABS,0,0);
-	//Usuniecie hooka na pobieranie aktywnych zakladek
-	PluginLink.UnhookEvent(OnFetchAllTabs);
-  }
-  //Hook na aktwyna zakladke lub okno rozmowy
-  PluginLink.HookEvent(AQQ_CONTACTS_BUDDY_ACTIVETAB,OnActiveTab);
   //Hook na zamkniecie okna rozmowy lub zakladki
   PluginLink.HookEvent(AQQ_CONTACTS_BUDDY_CLOSETAB,OnCloseTab);
   //Hook na zmianê stanu kontaktu
@@ -342,7 +289,6 @@ extern "C" int __declspec(dllexport) __stdcall Unload()
   //Wyrejestowanie klasy okna timera
   UnregisterClass(L"TInvShowTimer",HInstance);
   //Wyladowanie wszystkich hookow
-  PluginLink.UnhookEvent(OnActiveTab);
   PluginLink.UnhookEvent(OnCloseTab);
   PluginLink.UnhookEvent(OnContactsUpdate);
   PluginLink.UnhookEvent(OnRecvMsg);
@@ -356,7 +302,7 @@ extern "C" __declspec(dllexport) PPluginInfo __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,1,1,0);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,2,0,0);
   PluginInfo.Description = L"Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan \"roz³¹czony\", jego stan zostanie zmieniony na \"niewidoczny\" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.";
   PluginInfo.Author = L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = L"kontakt@beherit.pl";

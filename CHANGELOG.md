@@ -1,3 +1,8 @@
+1.2.0.0
+-----
+* Okno rozmowy z kontaktem nie musi byæ otwarte, aby jego stan siê zmieni³.
+* Wiadomoœci offline'owe nie zmieniaj¹ stanu kontaktu.
+
 1.1.1.0
 -----
 * Drobne poprawki w procesie wy³adowania wtyczki.
