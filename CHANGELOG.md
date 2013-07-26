@@ -1,3 +1,7 @@
+1.3.0.0
+-----
+* Dodanie 64-bitowej wersji wtyczki.
+
 1.2.0.0
 -----
 * Okno rozmowy z kontaktem nie musi byæ otwarte, aby jego stan siê zmieni³.
