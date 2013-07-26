@@ -1,0 +1,1 @@
+Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan "roz³¹czony", jego stan zostanie zmieniony na "niewidoczny" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.
