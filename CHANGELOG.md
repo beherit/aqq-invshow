@@ -1,3 +1,8 @@
+1.0.4.0
+-----
+* Poprawne wykrywanie, które zak³adki s¹ konferencjami/czatami.
+* Przywracanie stanu "roz³¹czony" po 5 minutach od zamkniêcia zak³adki dla kontaktów pochodz¹cych z wtyczki.
+
 1.0.3.0
 -----
 * Poprawka w kodzie (problemy z zasobami).
