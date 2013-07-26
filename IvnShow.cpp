@@ -120,17 +120,14 @@ int __stdcall OnReceiveMessage (WPARAM wParam, LPARAM lParam)
   if(State==0)
   {
 	JID = (wchar_t*)(Contact->JID);
-	if
-	(
-	  (AnsiPos("@conference.",JID)==0)&&
-	  (
-		(AnsiPos("konferencja",JID)!=1)&&
-		(AnsiPos("@plugin.gg",JID)!=0)
-	  )&&
-	  (AnsiPos("@plugin.irc",JID)==0)
+	Resource = (wchar_t*)(Contact->Resource);
+
+	if(
+	(AnsiPos("@conference.",JID)==0)&&
+	(AnsiPos("@plugin.irc",JID)==0)&&
+	(AnsiPos("konferencja",JID)!=1)
 	)
 	{
-	  Resource = (wchar_t*)(Contact->Resource);
 	  JID = JID + "/" + Resource;
 
 	  IsThere = false;
@@ -162,7 +159,7 @@ extern "C" __declspec(dllexport) PPluginInfo __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = (wchar_t*)L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,0,1,0);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,0,1,2);
   PluginInfo.Description = (wchar_t *)L"";
   PluginInfo.Author = (wchar_t *)L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = (wchar_t *)L"sirbeherit@gmail.com";

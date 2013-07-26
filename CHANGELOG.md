@@ -1,3 +1,7 @@
+1.0.1.2
+-----
+* Poprawka w kodzie.
+
 1.0.1.0
 -----
 * Wy³¹czenie dzia³ania wtyczki dla: czatów, konferencji GG, wtyczki IRC.
