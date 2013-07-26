@@ -28,6 +28,7 @@ UnicodeString Typ;
 bool IsThere;
 
 int State;
+bool Temporary;
 
 int __stdcall OnFetchAllTabs (WPARAM wParam, LPARAM lParam)
 {
@@ -115,18 +116,15 @@ int __stdcall OnReceiveMessage (WPARAM wParam, LPARAM lParam)
 {
   Contact = (PPluginContact)wParam;
   State = Contact->State;
+  Temporary = Contact->Temporary;
 
-  //Jezeli kontakt jest rozlazony
-  if(State==0)
+  //Jezeli kontakt jest rozlazony i jest na liscie kontaktow
+  if((State==0)&&(Temporary==false))
   {
 	JID = (wchar_t*)(Contact->JID);
 	Resource = (wchar_t*)(Contact->Resource);
 
-	if(
-	(AnsiPos("@conference.",JID)==0)&&
-	(AnsiPos("@plugin.irc",JID)==0)&&
-	(AnsiPos("konferencja",JID)!=1)
-	)
+	if(AnsiPos("@plugin.irc",JID)==0)
 	{
 	  JID = JID + "/" + Resource;
 
@@ -159,7 +157,7 @@ extern "C" __declspec(dllexport) PPluginInfo __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = (wchar_t*)L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,0,1,2);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,0,2,0);
   PluginInfo.Description = (wchar_t *)L"";
   PluginInfo.Author = (wchar_t *)L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = (wchar_t *)L"sirbeherit@gmail.com";
