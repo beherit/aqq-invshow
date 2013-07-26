@@ -1,3 +1,7 @@
+1.1.1.0
+-----
+* Drobne poprawki w procesie wy³adowania wtyczki.
+
 1.1.0.0
 -----
 * Przepisanie wtyczki pod kompilator Embarcadero C++ Builder XE3.

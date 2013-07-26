@@ -34,6 +34,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <VerInfo_Release>1</VerInfo_Release>
         <Manifest_File>None</Manifest_File>
         <VerInfo_Locale>1045</VerInfo_Locale>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
@@ -43,7 +44,7 @@
         <VerInfo_MinorVer>1</VerInfo_MinorVer>
         <AllPackageLibs>rtl.lib;vcl.lib</AllPackageLibs>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>FileVersion=1.1.0.0;InternalName=;LegalTrademarks=;OriginalFilename=;ProductName=InvShow;ProductVersion=1.0.0.0;Comments=;LegalCopyright=Krzysztof Grochocki (Beherit)</VerInfo_Keys>
+        <VerInfo_Keys>FileVersion=1.1.1.0;InternalName=;LegalTrademarks=;OriginalFilename=;ProductName=InvShow;ProductVersion=1.0.0.0;Comments=;LegalCopyright=Krzysztof Grochocki (Beherit)</VerInfo_Keys>
         <_TCHARMapping>wchar_t</_TCHARMapping>
         <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
         <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
@@ -81,6 +82,8 @@
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\debug\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_Keys>FileVersion=1.1.1.0;InternalName=;LegalTrademarks=;OriginalFilename=;ProductName=InvShow;ProductVersion=1.0.0.0;Comments=;LegalCopyright=Krzysztof Grochocki (Beherit)</VerInfo_Keys>
         <Defines>NDEBUG;$(Defines)</Defines>
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
