@@ -120,26 +120,37 @@ int __stdcall OnReceiveMessage (WPARAM wParam, LPARAM lParam)
   if(State==0)
   {
 	JID = (wchar_t*)(Contact->JID);
-	Resource = (wchar_t*)(Contact->Resource);
-	JID = JID + "/" + Resource;
-
-	IsThere = false;
-
-	//Sprawdzanie czy mamy otwarta zakladke z kontaktem
-	for(TableCount=0;TableCount<100;TableCount++)
+	if
+	(
+	  (AnsiPos("@conference.",JID)==0)&&
+	  (
+		(AnsiPos("konferencja",JID)!=1)&&
+		(AnsiPos("@plugin.gg",JID)!=0)
+	  )&&
+	  (AnsiPos("@plugin.irc",JID)==0)
+	)
 	{
-	  if(JIDTable[TableCount]==JID)
+	  Resource = (wchar_t*)(Contact->Resource);
+	  JID = JID + "/" + Resource;
+
+	  IsThere = false;
+
+	  //Sprawdzanie czy mamy otwarta zakladke z kontaktem
+	  for(TableCount=0;TableCount<100;TableCount++)
 	  {
-		TableCount = 100;
-		IsThere = true;
+		if(JIDTable[TableCount]==JID)
+		{
+		  TableCount = 100;
+		  IsThere = true;
+		}
 	  }
-	}
 
-	//Jezeli tak to zmienia sie stan kontaktu
-	if(IsThere==true)
-	{
-	  Contact->State = 6;
-	  PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)Contact);
+	  //Jezeli tak to zmienia sie stan kontaktu
+	  if(IsThere==true)
+	  {
+		Contact->State = 6;
+		PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)Contact);
+	  }
 	}
   }
 
@@ -151,7 +162,7 @@ extern "C" __declspec(dllexport) PPluginInfo __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = (wchar_t*)L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,0,0,0);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,0,1,0);
   PluginInfo.Description = (wchar_t *)L"";
   PluginInfo.Author = (wchar_t *)L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = (wchar_t *)L"sirbeherit@gmail.com";
