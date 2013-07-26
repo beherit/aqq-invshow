@@ -1,3 +1,9 @@
+1.3.1.0
+-----
+* Wtyczka posiada w³asn¹ ikonê pokazywan¹ w ustawieniach komunikatora na liœcie wtyczek.
+* Zmniejszenie rozmiaru wtyczki 32-bitowej poprzez u¿ycie kompresji LZMA.
+* Brak kompresji wtyczki 64-bitowej.
+
 1.3.0.0
 -----
 * Dodanie 64-bitowej wersji wtyczki.
