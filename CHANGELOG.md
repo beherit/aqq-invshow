@@ -1,3 +1,7 @@
+1.3.2.0
+-----
+* Optymalizacja kodu.
+
 1.3.1.0
 -----
 * Wtyczka posiada w³asn¹ ikonê pokazywan¹ w ustawieniach komunikatora na liœcie wtyczek.
