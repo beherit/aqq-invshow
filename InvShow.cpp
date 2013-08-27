@@ -1,6 +1,26 @@
-//#include <vcl.h>
-//#include <windows.h>
-#include <System.hpp>
+//---------------------------------------------------------------------------
+// Copyright (C) 2010-2013 Krzysztof Grochocki
+//
+// This file is part of InvShow
+//
+// InvShow is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3, or (at your option)
+// any later version.
+//
+// InvShow is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with GNU Radio; see the file COPYING. If not, write to
+// the Free Software Foundation, Inc., 51 Franklin Street,
+// Boston, MA 02110-1301, USA.
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#include <windows.h>
 #pragma hdrstop
 #pragma argsused
 #include <PluginAPI.h>
@@ -15,10 +35,6 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 //Struktury-glowne-----------------------------------------------------------
 TPluginLink PluginLink;
 TPluginInfo PluginInfo;
-PPluginContact CloseTabContact;
-PPluginContact ContactsUpdateContact;
-PPluginContact RecvMsgContact;
-PPluginMessage RecvMsgMessage;
 //Uchwyt-do-okna-timera------------------------------------------------------
 HWND hTimerFrm;
 //Tablica-kontaktow----------------------------------------------------------
@@ -123,8 +139,8 @@ LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	  int TableIndex = ReciveTableIndex(ContactIndex);
 	  //Zmiania stanu kontaktu na "rozlaczony"
 	  PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)&ContactsList[ContactIndex]);
-	  //"Kasowanie" danych nt. kontaktu
-	  ContactsList[ContactIndex].cbSize = NULL;
+	  //Kasowanie danych nt. kontaktu
+	  ZeroMemory(&ContactsList[ContactIndex],sizeof(TPluginContact));
 	  IdTable[TableIndex].TimerId = -1;
 	  IdTable[TableIndex].ContactIndex = -1;
 	}
@@ -140,9 +156,9 @@ LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 {
   //Pobieranie danych kontaktu
-  CloseTabContact = (PPluginContact)lParam;
+  TPluginContact CloseTabContact = *(PPluginContact)lParam;
   //Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
-  if((!CloseTabContact->Temporary)&&(!CloseTabContact->IsChat)&&(CloseTabContact->State==6))
+  if((!CloseTabContact.Temporary)&&(!CloseTabContact.IsChat)&&(CloseTabContact.State==6))
   {
 	//Pobranie wolnych rekordow
 	int FreeContact = ReciveFreeContact();
@@ -152,37 +168,8 @@ int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 	//Przypisanie danych w tablicy unikatowych ID timera
 	IdTable[FreeTable].TimerId = TimerID;
 	IdTable[FreeTable].ContactIndex = FreeContact;
-	//Przypisanie danych w tablicy kontaktow
-	//cbSize
-	ContactsList[FreeContact].cbSize = CloseTabContact->cbSize;
-	//JID
-	ContactsList[FreeContact].JID = (wchar_t*)realloc(ContactsList[FreeContact].JID, sizeof(wchar_t)*(wcslen(CloseTabContact->JID)+1));
-	memcpy(ContactsList[FreeContact].JID, CloseTabContact->JID, sizeof(wchar_t)*wcslen(CloseTabContact->JID));
-	ContactsList[FreeContact].JID[wcslen(CloseTabContact->JID)] = L'\0';
-	//Nick
-	ContactsList[FreeContact].Nick = (wchar_t*)realloc(ContactsList[FreeContact].Nick, sizeof(wchar_t)*(wcslen(CloseTabContact->Nick)+1));
-	memcpy(ContactsList[FreeContact].Nick, CloseTabContact->Nick, sizeof(wchar_t)*wcslen(CloseTabContact->Nick));
-	ContactsList[FreeContact].Nick[wcslen(CloseTabContact->Nick)] = L'\0';
-	//Resource
-	ContactsList[FreeContact].Resource = (wchar_t*)realloc(ContactsList[FreeContact].Resource, sizeof(wchar_t)*(wcslen(CloseTabContact->Resource)+1));
-	memcpy(ContactsList[FreeContact].Resource, CloseTabContact->Resource, sizeof(wchar_t)*wcslen(CloseTabContact->Resource));
-	ContactsList[FreeContact].Resource[wcslen(CloseTabContact->Resource)] = L'\0';
-	//Groups
-	ContactsList[FreeContact].Groups = (wchar_t*)realloc(ContactsList[FreeContact].Groups, sizeof(wchar_t)*(wcslen(CloseTabContact->Groups)+1));
-	memcpy(ContactsList[FreeContact].Groups, CloseTabContact->Groups, sizeof(wchar_t)*wcslen(CloseTabContact->Groups));
-	ContactsList[FreeContact].Groups[wcslen(CloseTabContact->Groups)] = L'\0';
-	//State
-	ContactsList[FreeContact].State = 0;
-	//Status
-	ContactsList[FreeContact].Status = (wchar_t*)realloc(ContactsList[FreeContact].Status, sizeof(wchar_t)*(wcslen(CloseTabContact->Status)+1));
-	memcpy(ContactsList[FreeContact].Status, CloseTabContact->Status, sizeof(wchar_t)*wcslen(CloseTabContact->Status));
-	ContactsList[FreeContact].Status[wcslen(CloseTabContact->Status)] = L'\0';
-    //Other
-	ContactsList[FreeContact].Temporary = CloseTabContact->Temporary;
-	ContactsList[FreeContact].FromPlugin = CloseTabContact->FromPlugin;
-	ContactsList[FreeContact].UserIdx = CloseTabContact->UserIdx;
-	ContactsList[FreeContact].Subscription = CloseTabContact->Subscription;
-	ContactsList[FreeContact].IsChat = CloseTabContact->Subscription;
+	//Zapisanie danych w tablicy kontaktow
+	memcpy(&ContactsList[FreeContact],&CloseTabContact, sizeof(TPluginContact));
 	//Wlacznie timera ustawienia rozlaczonego stanu kontatku
 	SetTimer(hTimerFrm,TimerID,300000,(TIMERPROC)TimerFrmProc);
   }
@@ -194,10 +181,10 @@ int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 //Hook na zmianê stanu kontaktu
 int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 {
-  //Pobieranie danych kontaku
-  ContactsUpdateContact = (PPluginContact)wParam;
+  //Pobieranie danych nt. kontaku
+  TPluginContact ContactsUpdateContact = *(PPluginContact)wParam;
   //Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
-  if((!ContactsUpdateContact->Temporary)&&(!ContactsUpdateContact->IsChat)&&(ContactsUpdateContact->State!=6))
+  if((!ContactsUpdateContact.Temporary)&&(!ContactsUpdateContact.IsChat)&&(ContactsUpdateContact.State!=6))
   {
 	//Przeszukiwanie tablicy
 	for(int Count=0;Count<100;Count++)
@@ -206,16 +193,16 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 	  if(ContactsList[Count].cbSize)
 	  {
         //Porwnanie zapamietego rekordu z danymi z notyfikacji
-		if((ContactsList[Count].JID==ContactsUpdateContact->JID)
-		&&(ContactsList[Count].Resource==ContactsUpdateContact->Resource)
-		&&(ContactsList[Count].UserIdx==ContactsUpdateContact->UserIdx))
+		if((ContactsList[Count].JID==ContactsUpdateContact.JID)
+		&&(ContactsList[Count].Resource==ContactsUpdateContact.Resource)
+		&&(ContactsList[Count].UserIdx==ContactsUpdateContact.UserIdx))
 		{
           //Pobranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
 		  int TableIndex = ReciveTableIndex(Count);
 		  //Zatrzymanie timera
 		  KillTimer(hTimerFrm,IdTable[TableIndex].TimerId);
-		  //"Kasowanie" danych nt. kontaktu
-		  ContactsList[Count].cbSize = NULL;
+		  //Kasowanie danych nt. kontaktu
+		  ZeroMemory(&ContactsList[Count],sizeof(TPluginContact));
 		  IdTable[TableIndex].TimerId = -1;
 		  IdTable[TableIndex].ContactIndex = -1;
 		  //Zakonczenie petli
@@ -232,20 +219,20 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 //Hook na odbieranie wiadomosci
 int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam)
 {
-  //Pobieranie danych kontaktu
-  RecvMsgContact = (PPluginContact)wParam;
+  //Pobieranie danych nt. kontaktu
+  TPluginContact RecvMsgContact = *(PPluginContact)wParam;
   //Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
-  if((!RecvMsgContact->Temporary)&&(!RecvMsgContact->IsChat)&&(RecvMsgContact->State==0))
+  if((!RecvMsgContact.Temporary)&&(!RecvMsgContact.IsChat)&&(RecvMsgContact.State==0))
   {
-	//Pobieranie danych wiadomosci
-	RecvMsgMessage = (PPluginMessage)lParam;
+	//Pobieranie danych nt. wiadomosci
+	TPluginMessage RecvMsgMessage = *(PPluginMessage)lParam;
 	//Wiadomosc nie jest offline'owa
-	if(!RecvMsgMessage->Offline)
+	if(!RecvMsgMessage.Offline)
 	{
 	  //Ustawienie stanu kontatku
-	  RecvMsgContact->State = 6;
+	  RecvMsgContact.State = 6;
 	  //Zmiana stanu kontatku na liscie
-	  PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)RecvMsgContact);
+	  PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)&RecvMsgContact);
 	}
   }
 
@@ -364,12 +351,14 @@ extern "C" PPluginInfo __declspec(dllexport) __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,1,0);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,2,0);
   PluginInfo.Description = L"Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan \"roz³¹czony\", jego stan zostanie zmieniony na \"niewidoczny\" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.";
   PluginInfo.Author = L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = L"kontakt@beherit.pl";
   PluginInfo.Copyright = L"Krzysztof Grochocki (Beherit)";
   PluginInfo.Homepage = L"http://beherit.pl";
+  PluginInfo.Flag = 0;
+  PluginInfo.ReplaceDefaultModule = 0;
 
   return &PluginInfo;
 }
