@@ -1,3 +1,7 @@
+1.3.2.2
+-----
+* Usuniêcie drobnego b³êdu.
+
 1.3.2.0
 -----
 * Optymalizacja kodu.

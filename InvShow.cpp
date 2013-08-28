@@ -169,7 +169,36 @@ int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 	IdTable[FreeTable].TimerId = TimerID;
 	IdTable[FreeTable].ContactIndex = FreeContact;
 	//Zapisanie danych w tablicy kontaktow
-	memcpy(&ContactsList[FreeContact],&CloseTabContact, sizeof(TPluginContact));
+    //cbSize
+	ContactsList[FreeContact].cbSize = CloseTabContact.cbSize;
+	//JID
+	ContactsList[FreeContact].JID = (wchar_t*)realloc(ContactsList[FreeContact].JID, sizeof(wchar_t)*(wcslen(CloseTabContact.JID)+1));
+	memcpy(ContactsList[FreeContact].JID, CloseTabContact.JID, sizeof(wchar_t)*wcslen(CloseTabContact.JID));
+	ContactsList[FreeContact].JID[wcslen(CloseTabContact.JID)] = L'\0';
+	//Nick
+	ContactsList[FreeContact].Nick = (wchar_t*)realloc(ContactsList[FreeContact].Nick, sizeof(wchar_t)*(wcslen(CloseTabContact.Nick)+1));
+	memcpy(ContactsList[FreeContact].Nick, CloseTabContact.Nick, sizeof(wchar_t)*wcslen(CloseTabContact.Nick));
+	ContactsList[FreeContact].Nick[wcslen(CloseTabContact.Nick)] = L'\0';
+	//Resource
+	ContactsList[FreeContact].Resource = (wchar_t*)realloc(ContactsList[FreeContact].Resource, sizeof(wchar_t)*(wcslen(CloseTabContact.Resource)+1));
+	memcpy(ContactsList[FreeContact].Resource, CloseTabContact.Resource, sizeof(wchar_t)*wcslen(CloseTabContact.Resource));
+	ContactsList[FreeContact].Resource[wcslen(CloseTabContact.Resource)] = L'\0';
+	//Groups
+	ContactsList[FreeContact].Groups = (wchar_t*)realloc(ContactsList[FreeContact].Groups, sizeof(wchar_t)*(wcslen(CloseTabContact.Groups)+1));
+	memcpy(ContactsList[FreeContact].Groups, CloseTabContact.Groups, sizeof(wchar_t)*wcslen(CloseTabContact.Groups));
+	ContactsList[FreeContact].Groups[wcslen(CloseTabContact.Groups)] = L'\0';
+	//State
+	ContactsList[FreeContact].State = 0;
+	//Status
+	ContactsList[FreeContact].Status = (wchar_t*)realloc(ContactsList[FreeContact].Status, sizeof(wchar_t)*(wcslen(CloseTabContact.Status)+1));
+	memcpy(ContactsList[FreeContact].Status, CloseTabContact.Status, sizeof(wchar_t)*wcslen(CloseTabContact.Status));
+	ContactsList[FreeContact].Status[wcslen(CloseTabContact.Status)] = L'\0';
+	//Other
+	ContactsList[FreeContact].Temporary = CloseTabContact.Temporary;
+	ContactsList[FreeContact].FromPlugin = CloseTabContact.FromPlugin;
+	ContactsList[FreeContact].UserIdx = CloseTabContact.UserIdx;
+	ContactsList[FreeContact].Subscription = CloseTabContact.Subscription;
+	ContactsList[FreeContact].IsChat = CloseTabContact.Subscription;
 	//Wlacznie timera ustawienia rozlaczonego stanu kontatku
 	SetTimer(hTimerFrm,TimerID,300000,(TIMERPROC)TimerFrmProc);
   }
@@ -192,12 +221,15 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
       //Jezeli rekord nie jest pusty
 	  if(ContactsList[Count].cbSize)
 	  {
-        //Porwnanie zapamietego rekordu z danymi z notyfikacji
-		if((ContactsList[Count].JID==ContactsUpdateContact.JID)
-		&&(ContactsList[Count].Resource==ContactsUpdateContact.Resource)
-		&&(ContactsList[Count].UserIdx==ContactsUpdateContact.UserIdx))
+		//Pobranie danych rekordu
+		UnicodeString JID = (wchar_t*)ContactsList[Count].JID;
+		UnicodeString Resource = (wchar_t*)ContactsList[Count].Resource;
+		//Porwnanie zapamietego rekordu z danymi z notyfikacji
+		if(((wchar_t*)ContactsUpdateContact.JID==JID)
+		&&((wchar_t*)ContactsUpdateContact.Resource==Resource)
+		&&(ContactsUpdateContact.UserIdx==ContactsList[Count].UserIdx))
 		{
-          //Pobranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
+		  //Pobranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
 		  int TableIndex = ReciveTableIndex(Count);
 		  //Zatrzymanie timera
 		  KillTimer(hTimerFrm,IdTable[TableIndex].TimerId);
@@ -351,7 +383,7 @@ extern "C" PPluginInfo __declspec(dllexport) __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,2,0);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,2,2);
   PluginInfo.Description = L"Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan \"roz³¹czony\", jego stan zostanie zmieniony na \"niewidoczny\" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.";
   PluginInfo.Author = L"Krzysztof Grochocki (Beherit)";
   PluginInfo.AuthorMail = L"kontakt@beherit.pl";
