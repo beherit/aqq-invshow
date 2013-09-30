@@ -12,7 +12,7 @@ Autorem wtyczki InvShow jest Krzysztof Grochocki. Możesz skontaktować się z n
 
 Licencja
 -------
-Wtyczka InvShow wykorzystuje licencję [GNU General Public License 3](http://www.gnu.org/copyleft/gpl.html).
+Wtyczka InvShow objęta jest licencją [GNU General Public License 3](http://www.gnu.org/copyleft/gpl.html).
 
     InvShow
     Copyright (C) 2010-2013  Krzysztof Grochocki
