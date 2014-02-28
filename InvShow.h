@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-// Copyright (C) 2010-2013 Krzysztof Grochocki
+// Copyright (C) 2010-2014 Krzysztof Grochocki
 //
 // This file is part of InvShow
 //

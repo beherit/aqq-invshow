@@ -1,3 +1,8 @@
+1.4.0.0
+-----
+* Kompilacja pod poprawionymi nag³ówkami dla wersji 64-bitowej.
+* Zmniejszenie rozmiaru wtyczki 64-bitowej poprzez u¿ycie kompresji LZMA.
+
 1.3.2.2
 -----
 * Usuniêcie drobnego b³êdu.
