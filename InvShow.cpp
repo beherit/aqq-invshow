@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-// Copyright (C) 2010-2013 Krzysztof Grochocki
+// Copyright (C) 2010-2014 Krzysztof Grochocki
 //
 // This file is part of InvShow
 //
@@ -48,9 +48,9 @@ struct TIdTable
 //Zmienna-tablicy-unikatowych-ID-timera--------------------------------------
 TIdTable IdTable[100];
 //FORWARD-AQQ-HOOKS----------------------------------------------------------
-int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam);
-int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam);
-int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam);
+INT_PTR __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam);
+INT_PTR __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam);
+INT_PTR __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam);
 //FORWARD-TIMER--------------------------------------------------------------
 LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 //---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 //---------------------------------------------------------------------------
 
 //Hook na zamkniecie okna rozmowy lub zakladki
-int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
+INT_PTR __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 {
   //Pobieranie danych kontaktu
   TPluginContact CloseTabContact = *(PPluginContact)lParam;
@@ -208,7 +208,7 @@ int __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 //---------------------------------------------------------------------------
 
 //Hook na zmianê stanu kontaktu
-int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
+INT_PTR __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 {
   //Pobieranie danych nt. kontaku
   TPluginContact ContactsUpdateContact = *(PPluginContact)wParam;
@@ -249,7 +249,7 @@ int __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 //---------------------------------------------------------------------------
 
 //Hook na odbieranie wiadomosci
-int __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam)
+INT_PTR __stdcall OnRecvMsg(WPARAM wParam, LPARAM lParam)
 {
   //Pobieranie danych nt. kontaktu
   TPluginContact RecvMsgContact = *(PPluginContact)wParam;
@@ -317,7 +317,8 @@ UnicodeString MD5File(UnicodeString FileName)
 }
 //---------------------------------------------------------------------------
 
-extern "C" int __declspec(dllexport) __stdcall Load(PPluginLink Link)
+//Zaladowanie wtyczki
+extern "C" INT_PTR __declspec(dllexport) __stdcall Load(PPluginLink Link)
 {
   //Linkowanie wtyczki z komunikatorem
   PluginLink = *Link;
@@ -357,7 +358,8 @@ extern "C" int __declspec(dllexport) __stdcall Load(PPluginLink Link)
 }
 //---------------------------------------------------------------------------
 
-extern "C" int __declspec(dllexport) __stdcall Unload()
+//Wyladowanie wtyczki
+extern "C" INT_PTR __declspec(dllexport) __stdcall Unload()
 {
   //Zatrzymanie wszystkich timerow
   for(int Count=0;Count<100;Count++)
@@ -383,11 +385,11 @@ extern "C" PPluginInfo __declspec(dllexport) __stdcall AQQPluginInfo(DWORD AQQVe
 {
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = L"InvShow";
-  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,3,2,2);
+  PluginInfo.Version = PLUGIN_MAKE_VERSION(1,4,0,0);
   PluginInfo.Description = L"Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan \"roz³¹czony\", jego stan zostanie zmieniony na \"niewidoczny\" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.";
-  PluginInfo.Author = L"Krzysztof Grochocki (Beherit)";
+  PluginInfo.Author = L"Krzysztof Grochocki";
   PluginInfo.AuthorMail = L"kontakt@beherit.pl";
-  PluginInfo.Copyright = L"Krzysztof Grochocki (Beherit)";
+  PluginInfo.Copyright = L"Krzysztof Grochocki";
   PluginInfo.Homepage = L"http://beherit.pl";
   PluginInfo.Flag = 0;
   PluginInfo.ReplaceDefaultModule = 0;
