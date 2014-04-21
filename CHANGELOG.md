@@ -1,11 +1,11 @@
 1.4.0.0
 -----
-* Kompilacja pod poprawionymi nag³ówkami dla wersji 64-bitowej.
-* Zmniejszenie rozmiaru wtyczki 64-bitowej poprzez u¿ycie kompresji LZMA.
+* Kompilacja pod poprawionymi nagÅ‚Ã³wkami dla wersji 64-bitowej.
+* Zmniejszenie rozmiaru wtyczki 64-bitowej poprzez uÅ¼ycie kompresji LZMA.
 
 1.3.2.2
 -----
-* Usuniêcie drobnego b³êdu.
+* UsuniÄ™cie drobnego bÅ‚Ä™du.
 
 1.3.2.0
 -----
@@ -13,8 +13,8 @@
 
 1.3.1.0
 -----
-* Wtyczka posiada w³asn¹ ikonê pokazywan¹ w ustawieniach komunikatora na liœcie wtyczek.
-* Zmniejszenie rozmiaru wtyczki 32-bitowej poprzez u¿ycie kompresji LZMA.
+* Wtyczka posiada wÅ‚asnÄ… ikonÄ™ pokazywanÄ… w ustawieniach komunikatora na liÅ›cie wtyczek.
+* Zmniejszenie rozmiaru wtyczki 32-bitowej poprzez uÅ¼ycie kompresji LZMA.
 * Brak kompresji wtyczki 64-bitowej.
 
 1.3.0.0
@@ -23,23 +23,23 @@
 
 1.2.0.0
 -----
-* Okno rozmowy z kontaktem nie musi byæ otwarte, aby jego stan siê zmieni³.
-* Wiadomoœci offline'owe nie zmieniaj¹ stanu kontaktu.
+* Okno rozmowy z kontaktem nie musi byÄ‡ otwarte, aby jego stan siÄ™ zmieniÅ‚.
+* WiadomoÅ›ci offline'owe nie zmieniajÄ… stanu kontaktu.
 
 1.1.1.0
 -----
-* Drobne poprawki w procesie wy³adowania wtyczki.
+* Drobne poprawki w procesie wyÅ‚adowania wtyczki.
 
 1.1.0.0
 -----
 * Przepisanie wtyczki pod kompilator Embarcadero C++ Builder XE3.
 * Spora optymalizacja kodu.
-* Przywracanie stanu „roz³¹czony” po 5 minutach od zamkniêcia zak³adki dla wszystkich kontaktów.
+* Przywracanie stanu â€rozÅ‚Ä…czonyâ€ po 5 minutach od zamkniÄ™cia zakÅ‚adki dla wszystkich kontaktÃ³w.
 
 1.0.4.0
 -----
-* Poprawne wykrywanie, które zak³adki s¹ konferencjami/czatami.
-* Przywracanie stanu "roz³¹czony" po 5 minutach od zamkniêcia zak³adki dla kontaktów pochodz¹cych z wtyczki.
+* Poprawne wykrywanie, ktÃ³re zakÅ‚adki sÄ… konferencjami/czatami.
+* Przywracanie stanu "rozÅ‚Ä…czony" po 5 minutach od zamkniÄ™cia zakÅ‚adki dla kontaktÃ³w pochodzÄ…cych z wtyczki.
 
 1.0.3.0
 -----
@@ -47,7 +47,7 @@
 
 1.0.2.0
 -----
-* Wy³¹czenie dzia³ania wtyczki dla kontaktów z poza listy.
+* WyÅ‚Ä…czenie dziaÅ‚ania wtyczki dla kontaktÃ³w z poza listy.
 
 1.0.1.2
 -----
@@ -55,7 +55,7 @@
 
 1.0.1.0
 -----
-* Wy³¹czenie dzia³ania wtyczki dla: czatów, konferencji GG, wtyczki IRC.
+* WyÅ‚Ä…czenie dziaÅ‚ania wtyczki dla: czatÃ³w, konferencji GG, wtyczki IRC.
 
 1.0.0.0
 -----
