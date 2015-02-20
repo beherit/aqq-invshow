@@ -1,1 +1,4 @@
-Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan "roz³¹czony", jego stan zostanie zmieniony na "niewidoczny" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.
+PL:
+Zmienia stan kontaktu z "roz³¹czony" na "niewidoczny" podczas rozmowy. Stan kontaktu jest przywracany, gdy roz³¹czy siê on z sieci¹, zmieni swój stan lub po up³ywie 5 minut od zamkniêcia okna rozmowy.
+EN:
+Changes the contact state from the "offline" to "invisible" during the conversation. State is restored when contact disconnect from the network, change its status or after 5 minutes from closing the chat window.
