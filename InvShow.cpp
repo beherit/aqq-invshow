@@ -386,7 +386,7 @@ extern "C" PPluginInfo __declspec(dllexport) __stdcall AQQPluginInfo(DWORD AQQVe
   PluginInfo.cbSize = sizeof(TPluginInfo);
   PluginInfo.ShortName = L"InvShow";
   PluginInfo.Version = PLUGIN_MAKE_VERSION(1,4,0,0);
-  PluginInfo.Description = L"Wtyczka oferuje funkcjonalnoœæ znan¹ z AQQ 1.x. Gdy rozmawiamy z kontaktem, który ma stan \"roz³¹czony\", jego stan zostanie zmieniony na \"niewidoczny\" a¿ do momentu, gdy roz³¹czy siê on z sieci¹ lub po prostu zmieni swój stan.";
+  PluginInfo.Description = L"Zmienia stan kontaktu z \"roz³¹czony\" na \"niewidoczny\" podczas rozmowy. Stan kontaktu jest przywracany, gdy roz³¹czy siê on z sieci¹, zmieni swój stan lub po up³ywie 5 minut od zamkniêcia okna rozmowy.";
   PluginInfo.Author = L"Krzysztof Grochocki";
   PluginInfo.AuthorMail = L"kontakt@beherit.pl";
   PluginInfo.Copyright = L"Krzysztof Grochocki";
