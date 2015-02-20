@@ -1,3 +1,7 @@
+1.5.0.0
+-----
+* Spore zmiany optymalizacyjne w kodzie.
+
 1.4.0.0
 -----
 * Kompilacja pod poprawionymi nagłówkami dla wersji 64-bitowej.
