@@ -58,10 +58,10 @@
         <ProjectType>VCppStyleDll</ProjectType>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <Multithreaded>true</Multithreaded>
-        <VerInfo_MinorVer>4</VerInfo_MinorVer>
+        <VerInfo_MinorVer>5</VerInfo_MinorVer>
         <AllPackageLibs>rtl.lib;vcl.lib;IndyProtocols.lib;IndyCore.lib;IndySystem.lib</AllPackageLibs>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>FileVersion=1.4.0.0;ProductName=InvShow;ProductVersion=1.0.0.0;LegalCopyright=Krzysztof Grochocki;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
+        <VerInfo_Keys>FileVersion=1.5.0.0;ProductName=InvShow;ProductVersion=1.0.0.0;LegalCopyright=Krzysztof Grochocki;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
         <_TCHARMapping>wchar_t</_TCHARMapping>
         <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
         <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
@@ -79,7 +79,7 @@
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_Keys>FileVersion=1.4.0.0;LegalCopyright=Krzysztof Grochocki;ProductName=InvShow;ProductVersion=1.0.0.0;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
+        <VerInfo_Keys>FileVersion=1.5.0.0;LegalCopyright=Krzysztof Grochocki;ProductName=InvShow;ProductVersion=1.0.0.0;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <Defines>_DEBUG;$(Defines)</Defines>
@@ -104,17 +104,20 @@
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\debug\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <VerInfo_Keys>FileVersion=1.4.0.0;LegalCopyright=Krzysztof Grochocki;ProductName=InvShow;ProductVersion=1.0.0.0;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
+        <VerInfo_Keys>FileVersion=1.5.0.0;LegalCopyright=Krzysztof Grochocki;ProductName=InvShow;ProductVersion=1.0.0.0;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <VerInfo_MinorVer>5</VerInfo_MinorVer>
+        <VerInfo_Keys>FileVersion=1.5.0.0;ProductName=InvShow;ProductVersion=1.0.0.0;LegalCopyright=Krzysztof Grochocki;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
         <Defines>NDEBUG;$(Defines)</Defines>
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <ILINK_LibraryPath>$(BDS)\lib\win32\release\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <LinkPackageStatics>rtl.lib;vcl.lib;IndyProtocols.lib;IndyCore.lib;IndySystem.lib</LinkPackageStatics>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
-        <VerInfo_Keys>FileVersion=1.4.0.0;LegalCopyright=Krzysztof Grochocki;ProductName=InvShow;ProductVersion=1.0.0.0;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
+        <VerInfo_Keys>FileVersion=1.5.0.0;LegalCopyright=Krzysztof Grochocki;ProductName=InvShow;ProductVersion=1.0.0.0;LegalTrademarks=Krzysztof Grochocki;CompanyName=Beherit Development</VerInfo_Keys>
         <LinkPackageStatics>rtl.lib;vcl.lib</LinkPackageStatics>
     </PropertyGroup>
     <ItemGroup>
