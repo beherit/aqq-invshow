@@ -37,16 +37,14 @@ TPluginLink PluginLink;
 TPluginInfo PluginInfo;
 //Uchwyt-do-okna-timera------------------------------------------------------
 HWND hTimerFrm;
-//Tablica-kontaktow----------------------------------------------------------
-TPluginContact ContactsList[100];
-//Definicja-struktury-tablicy-unikatowych-ID-timera--------------------------
+//Definicja-struktury-tablicy-ID-timera-i-kontaktow--------------------------
 struct TIdTable
 {
-	int TimerId;
-	int ContactIndex;
+	int TimerID;
+	TPluginContact PluginContact;
 };
-//Zmienna-tablicy-unikatowych-ID-timera--------------------------------------
-TIdTable IdTable[100];
+//Zmienna-tablicy-ID-timera-i-kontaktow--------------------------------------
+DynamicArray<TIdTable> IdTable;
 //FORWARD-AQQ-HOOKS----------------------------------------------------------
 INT_PTR __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam);
 INT_PTR __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam);
@@ -62,49 +60,13 @@ UnicodeString GetPluginUserDir()
 }
 //---------------------------------------------------------------------------
 
-//Pobieranie indeksu wolnego rekordu listy kontaktow
-int ReciveFreeContact()
-{
-	for(int Count=0;Count<100;Count++)
-	{
-		if(!ContactsList[Count].cbSize)
-			return Count;
-	}
-	return -1;
-}
-//---------------------------------------------------------------------------
-
-//Pobieranie indeksu wolnego rekordu listy unikatowych ID timera
-int ReciveFreeTable()
-{
-	for(int Count=0;Count<100;Count++)
-	{
-		if(!IdTable[Count].TimerId)
-			return Count;
-	}
-	return -1;
-}
-//---------------------------------------------------------------------------
-
-//Pobieranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
-int ReciveTableIndex(int ID)
-{
-	for(int Count=0;Count<100;Count++)
-	{
-		if(IdTable[Count].ContactIndex==ID)
-			return Count;
-	}
-	return -1;
-}
-//---------------------------------------------------------------------------
-
-//Pobieranie indeksu rekordu listy kontaktow na podstawie ID timera
+//Pobieranie indeksu rekordu na podstawie ID timera
 int ReciveContactIndex(int TimerID)
 {
-	for(int Count=0;Count<100;Count++)
+	for(int Count=0;Count<IdTable.Length;Count++)
 	{
-		if(IdTable[Count].TimerId==TimerID)
-			return IdTable[Count].ContactIndex;
+		if(IdTable[Count].TimerID==TimerID)
+			return Count;
 	}
 	return -1;
 }
@@ -113,9 +75,9 @@ int ReciveContactIndex(int TimerID)
 //Sprawdzanie czy ID timera zostal wygenerowany przez wtyczke
 bool IsContactTimer(int ID)
 {
-	for(int Count=0;Count<100;Count++)
+	for(int Count=0;Count<IdTable.Length;Count++)
 	{
-		if(IdTable[Count].TimerId==ID)
+		if(IdTable[Count].TimerID==ID)
 			return true;
 	}
 	return false;
@@ -133,16 +95,14 @@ LRESULT CALLBACK TimerFrmProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		{
 			//Zatrzymanie timera
 			KillTimer(hTimerFrm,wParam);
-			//Pobieranie indeksu rekordu listy kontaktow na podstawie ID timera
-			int ContactIndex = ReciveContactIndex(wParam);
-			//Pobranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
-			int TableIndex = ReciveTableIndex(ContactIndex);
+			//Pobieranie indeksu rekordu na podstawie ID timera
+			int Idx = ReciveContactIndex(wParam);
 			//Zmiania stanu kontaktu na "rozlaczony"
-			PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)&ContactsList[ContactIndex]);
-			//Kasowanie danych nt. kontaktu
-			ZeroMemory(&ContactsList[ContactIndex],sizeof(TPluginContact));
-			IdTable[TableIndex].TimerId = -1;
-			IdTable[TableIndex].ContactIndex = -1;
+			PluginLink.CallService(AQQ_CONTACTS_UPDATE,0,(LPARAM)&IdTable[Idx].PluginContact);
+			//Przesuniecie ostatniego rekordu
+			IdTable[Idx].TimerID = IdTable[IdTable.Length-1].TimerID;
+			IdTable[Idx].PluginContact = IdTable[IdTable.Length-1].PluginContact;
+			IdTable.Length = IdTable.Length - 1;
 		}
 
 		return 0;
@@ -160,45 +120,44 @@ INT_PTR __stdcall OnCloseTab(WPARAM wParam, LPARAM lParam)
 	//Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
 	if((!CloseTabContact.Temporary)&&(!CloseTabContact.IsChat)&&(CloseTabContact.State==6))
 	{
-		//Pobranie wolnych rekordow
-		int FreeContact = ReciveFreeContact();
-		int FreeTable = ReciveFreeTable();
+		//Ustawianie nowego rekordu
+		int Idx = IdTable.Length;
+		IdTable.Length = IdTable.Length + 1;
 		//Wygenerowanie losowego ID timera
 		int TimerID = PluginLink.CallService(AQQ_FUNCTION_GETNUMID,0,0);
-		//Przypisanie danych w tablicy unikatowych ID timera
-		IdTable[FreeTable].TimerId = TimerID;
-		IdTable[FreeTable].ContactIndex = FreeContact;
+		//Zapisanie ID timera w tablicy
+		IdTable[Idx].TimerID = TimerID;
 		//Zapisanie danych w tablicy kontaktow
 		//cbSize
-		ContactsList[FreeContact].cbSize = CloseTabContact.cbSize;
+		IdTable[Idx].PluginContact.cbSize = CloseTabContact.cbSize;
 		//JID
-		ContactsList[FreeContact].JID = (wchar_t*)realloc(ContactsList[FreeContact].JID, sizeof(wchar_t)*(wcslen(CloseTabContact.JID)+1));
-		memcpy(ContactsList[FreeContact].JID, CloseTabContact.JID, sizeof(wchar_t)*wcslen(CloseTabContact.JID));
-		ContactsList[FreeContact].JID[wcslen(CloseTabContact.JID)] = L'\0';
+		IdTable[Idx].PluginContact.JID = (wchar_t*)realloc(IdTable[Idx].PluginContact.JID, sizeof(wchar_t)*(wcslen(CloseTabContact.JID)+1));
+		memcpy(IdTable[Idx].PluginContact.JID, CloseTabContact.JID, sizeof(wchar_t)*wcslen(CloseTabContact.JID));
+		IdTable[Idx].PluginContact.JID[wcslen(CloseTabContact.JID)] = L'\0';
 		//Nick
-		ContactsList[FreeContact].Nick = (wchar_t*)realloc(ContactsList[FreeContact].Nick, sizeof(wchar_t)*(wcslen(CloseTabContact.Nick)+1));
-		memcpy(ContactsList[FreeContact].Nick, CloseTabContact.Nick, sizeof(wchar_t)*wcslen(CloseTabContact.Nick));
-		ContactsList[FreeContact].Nick[wcslen(CloseTabContact.Nick)] = L'\0';
+		IdTable[Idx].PluginContact.Nick = (wchar_t*)realloc(IdTable[Idx].PluginContact.Nick, sizeof(wchar_t)*(wcslen(CloseTabContact.Nick)+1));
+		memcpy(IdTable[Idx].PluginContact.Nick, CloseTabContact.Nick, sizeof(wchar_t)*wcslen(CloseTabContact.Nick));
+		IdTable[Idx].PluginContact.Nick[wcslen(CloseTabContact.Nick)] = L'\0';
 		//Resource
-		ContactsList[FreeContact].Resource = (wchar_t*)realloc(ContactsList[FreeContact].Resource, sizeof(wchar_t)*(wcslen(CloseTabContact.Resource)+1));
-		memcpy(ContactsList[FreeContact].Resource, CloseTabContact.Resource, sizeof(wchar_t)*wcslen(CloseTabContact.Resource));
-		ContactsList[FreeContact].Resource[wcslen(CloseTabContact.Resource)] = L'\0';
+		IdTable[Idx].PluginContact.Resource = (wchar_t*)realloc(IdTable[Idx].PluginContact.Resource, sizeof(wchar_t)*(wcslen(CloseTabContact.Resource)+1));
+		memcpy(IdTable[Idx].PluginContact.Resource, CloseTabContact.Resource, sizeof(wchar_t)*wcslen(CloseTabContact.Resource));
+		IdTable[Idx].PluginContact.Resource[wcslen(CloseTabContact.Resource)] = L'\0';
 		//Groups
-		ContactsList[FreeContact].Groups = (wchar_t*)realloc(ContactsList[FreeContact].Groups, sizeof(wchar_t)*(wcslen(CloseTabContact.Groups)+1));
-		memcpy(ContactsList[FreeContact].Groups, CloseTabContact.Groups, sizeof(wchar_t)*wcslen(CloseTabContact.Groups));
-		ContactsList[FreeContact].Groups[wcslen(CloseTabContact.Groups)] = L'\0';
+		IdTable[Idx].PluginContact.Groups = (wchar_t*)realloc(IdTable[Idx].PluginContact.Groups, sizeof(wchar_t)*(wcslen(CloseTabContact.Groups)+1));
+		memcpy(IdTable[Idx].PluginContact.Groups, CloseTabContact.Groups, sizeof(wchar_t)*wcslen(CloseTabContact.Groups));
+		IdTable[Idx].PluginContact.Groups[wcslen(CloseTabContact.Groups)] = L'\0';
 		//State
-		ContactsList[FreeContact].State = 0;
+		IdTable[Idx].PluginContact.State = 0;
 		//Status
-		ContactsList[FreeContact].Status = (wchar_t*)realloc(ContactsList[FreeContact].Status, sizeof(wchar_t)*(wcslen(CloseTabContact.Status)+1));
-		memcpy(ContactsList[FreeContact].Status, CloseTabContact.Status, sizeof(wchar_t)*wcslen(CloseTabContact.Status));
-		ContactsList[FreeContact].Status[wcslen(CloseTabContact.Status)] = L'\0';
+		IdTable[Idx].PluginContact.Status = (wchar_t*)realloc(IdTable[Idx].PluginContact.Status, sizeof(wchar_t)*(wcslen(CloseTabContact.Status)+1));
+		memcpy(IdTable[Idx].PluginContact.Status, CloseTabContact.Status, sizeof(wchar_t)*wcslen(CloseTabContact.Status));
+		IdTable[Idx].PluginContact.Status[wcslen(CloseTabContact.Status)] = L'\0';
 		//Other
-		ContactsList[FreeContact].Temporary = CloseTabContact.Temporary;
-		ContactsList[FreeContact].FromPlugin = CloseTabContact.FromPlugin;
-		ContactsList[FreeContact].UserIdx = CloseTabContact.UserIdx;
-		ContactsList[FreeContact].Subscription = CloseTabContact.Subscription;
-		ContactsList[FreeContact].IsChat = CloseTabContact.Subscription;
+		IdTable[Idx].PluginContact.Temporary = CloseTabContact.Temporary;
+		IdTable[Idx].PluginContact.FromPlugin = CloseTabContact.FromPlugin;
+		IdTable[Idx].PluginContact.UserIdx = CloseTabContact.UserIdx;
+		IdTable[Idx].PluginContact.Subscription = CloseTabContact.Subscription;
+		IdTable[Idx].PluginContact.IsChat = CloseTabContact.Subscription;
 		//Wlacznie timera ustawienia rozlaczonego stanu kontatku
 		SetTimer(hTimerFrm,TimerID,300000,(TIMERPROC)TimerFrmProc);
 	}
@@ -212,34 +171,28 @@ INT_PTR __stdcall OnContactsUpdate(WPARAM wParam, LPARAM lParam)
 {
 	//Pobieranie danych nt. kontaku
 	TPluginContact ContactsUpdateContact = *(PPluginContact)wParam;
-	//Jezeli kontakt jest rozlazony, jest na liscie kontaktow oraz nie jest czatem
+	//Jezeli kontakt jest rozlaczony, jest na liscie kontaktow oraz nie jest czatem
 	if((!ContactsUpdateContact.Temporary)&&(!ContactsUpdateContact.IsChat)&&(ContactsUpdateContact.State!=6))
 	{
 		//Przeszukiwanie tablicy
-		for(int Count=0;Count<100;Count++)
+		for(int Count=0;Count<IdTable.Length;Count++)
 		{
-			//Jezeli rekord nie jest pusty
-			if(ContactsList[Count].cbSize)
+			//Pobranie danych rekordu
+			UnicodeString JID = (wchar_t*)IdTable[Count].PluginContact.JID;
+			UnicodeString Resource = (wchar_t*)IdTable[Count].PluginContact.Resource;
+			//Porwnanie zapamietego rekordu z danymi z notyfikacji
+			if(((wchar_t*)ContactsUpdateContact.JID==JID)
+			&&((wchar_t*)ContactsUpdateContact.Resource==Resource)
+			&&(ContactsUpdateContact.UserIdx==IdTable[Count].PluginContact.UserIdx))
 			{
-				//Pobranie danych rekordu
-				UnicodeString JID = (wchar_t*)ContactsList[Count].JID;
-				UnicodeString Resource = (wchar_t*)ContactsList[Count].Resource;
-				//Porwnanie zapamietego rekordu z danymi z notyfikacji
-				if(((wchar_t*)ContactsUpdateContact.JID==JID)
-				&&((wchar_t*)ContactsUpdateContact.Resource==Resource)
-				&&(ContactsUpdateContact.UserIdx==ContactsList[Count].UserIdx))
-				{
-					//Pobranie indeksu tabeli na podstawie indeksu rekordu listy kontaktow
-					int TableIndex = ReciveTableIndex(Count);
-					//Zatrzymanie timera
-					KillTimer(hTimerFrm,IdTable[TableIndex].TimerId);
-					//Kasowanie danych nt. kontaktu
-					ZeroMemory(&ContactsList[Count],sizeof(TPluginContact));
-					IdTable[TableIndex].TimerId = -1;
-					IdTable[TableIndex].ContactIndex = -1;
-					//Zakonczenie petli
-					Count = 100;
-				}
+				//Zatrzymanie timera
+				KillTimer(hTimerFrm,IdTable[Count].TimerID);
+				//Przesuniecie ostatniego rekordu
+				IdTable[Count].TimerID = IdTable[IdTable.Length-1].TimerID;
+				IdTable[Count].PluginContact = IdTable[IdTable.Length-1].PluginContact;
+				IdTable.Length = IdTable.Length - 1;
+				//Zakonczenie petli
+				break;
 			}
 		}
 	}
@@ -359,10 +312,10 @@ extern "C" INT_PTR __declspec(dllexport) __stdcall Load(PPluginLink Link)
 extern "C" INT_PTR __declspec(dllexport) __stdcall Unload()
 {
 	//Zatrzymanie wszystkich timerow
-	for(int Count=0;Count<100;Count++)
+	for(int Count=0;Count<IdTable.Length;Count++)
 	{
-		if(IdTable[Count].TimerId)
-			KillTimer(hTimerFrm,IdTable[Count].TimerId);
+		if(IdTable[Count].TimerID)
+			KillTimer(hTimerFrm,IdTable[Count].TimerID);
 	}
 	//Usuwanie okna timera
 	DestroyWindow(hTimerFrm);
