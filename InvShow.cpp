@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-// Copyright (C) 2010-2015 Krzysztof Grochocki
+// Copyright (C) 2010-2016 Krzysztof Grochocki
 //
 // This file is part of InvShow
 //
@@ -336,9 +336,9 @@ extern "C" PPluginInfo __declspec(dllexport) __stdcall AQQPluginInfo(DWORD AQQVe
 	PluginInfo.Version = PLUGIN_MAKE_VERSION(1,5,0,0);
 	PluginInfo.Description = L"Zmienia stan kontaktu z \"roz³¹czony\" na \"niewidoczny\" podczas rozmowy. Stan kontaktu jest przywracany, gdy roz³¹czy siê on z sieci¹, zmieni swój stan lub po up³ywie 5 minut od zamkniêcia okna rozmowy.";
 	PluginInfo.Author = L"Krzysztof Grochocki";
-	PluginInfo.AuthorMail = L"kontakt@beherit.pl";
+	PluginInfo.AuthorMail = L"contact@beherit.pl";
 	PluginInfo.Copyright = L"Krzysztof Grochocki";
-	PluginInfo.Homepage = L"http://beherit.pl";
+	PluginInfo.Homepage = L"beherit.pl";
 	PluginInfo.Flag = 0;
 	PluginInfo.ReplaceDefaultModule = 0;
 
